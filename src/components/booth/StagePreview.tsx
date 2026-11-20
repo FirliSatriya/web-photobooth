@@ -121,7 +121,7 @@ export function StagePreview({
     <div className={cn("relative", className)}>
       <canvas
         ref={canvasRef}
-        className="mx-auto block h-auto w-auto max-h-[74vh] max-w-full object-contain drop-shadow-[0_30px_60px_rgba(0,0,0,0.55)]"
+        className="mx-auto block h-auto w-auto max-h-[74vh] max-w-full object-contain drop-shadow-[0_30px_60px_color-mix(in_oklab,var(--brand-strong)_28%,transparent)]"
         role="img"
         aria-label="Pratinjau komposisi photostrip"
       />

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import {
   Aperture,
   Camera,
@@ -78,9 +79,13 @@ export function Booth({ code }: { code: string }) {
 
 function BoothSkeleton({ code }: { code: string }) {
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-6xl flex-col items-center justify-center gap-3 px-5">
-      <Loader2 className="h-5 w-5 animate-spin text-white/40" />
-      <p className="text-sm text-white/45">Menyiapkan ruang {code}…</p>
+    <div
+      className="mx-auto flex min-h-dvh w-full max-w-6xl flex-col items-center justify-center gap-3 px-5"
+      role="status"
+      aria-live="polite"
+    >
+      <Loader2 className="h-5 w-5 animate-spin text-primary" aria-hidden />
+      <p className="text-sm text-muted-foreground">Menyiapkan ruang {code}…</p>
     </div>
   );
 }
@@ -184,7 +189,6 @@ function BoothSession({ code }: { code: string }) {
 
   const [phase, setPhase] = useState<Phase>("lobby");
   const [busy, setBusy] = useState<Busy>(null);
-  const [toast, setToast] = useState<string | null>(null);
   const [paywallOpen, setPaywallOpen] = useState(false);
   const [shotIndex, setShotIndex] = useState(0);
   const [filled, setFilled] = useState(0);
@@ -598,7 +602,7 @@ function BoothSession({ code }: { code: string }) {
           break;
         }
         case "full": {
-          setToast("Ruangan sudah penuh. Buka Session Pass untuk menerima hingga 4 peserta.");
+          toast.warning("Ruangan sudah penuh. Buka Session Pass untuk menerima hingga 4 peserta.");
           break;
         }
         default:
@@ -702,7 +706,7 @@ function BoothSession({ code }: { code: string }) {
         }
 
         if (!captured) {
-          setToast("Kamera belum menghasilkan frame. Cek izin lalu pilih kamera lain.");
+          toast.warning("Kamera belum menghasilkan frame. Cek izin lalu pilih kamera lain.");
           return;
         }
 
@@ -713,7 +717,7 @@ function BoothSession({ code }: { code: string }) {
 
         const host = hostIdRef.current;
         if (!host) {
-          setToast("Host belum terhubung, jepretan tidak terkirim.");
+          toast.warning("Host belum terhubung, jepretan tidak terkirim.");
           return;
         }
         const buffer = await bufferFromBlob(captured.blob);
@@ -731,7 +735,7 @@ function BoothSession({ code }: { code: string }) {
         for (const packet of packets) sendToRef.current(host, packet);
         sendToRef.current(host, encodeDataText({ t: "shot-done", shotIndex: index }));
       } catch (error) {
-        setToast(error instanceof Error ? error.message : "Gagal menangkap jepretan.");
+        toast.warning(error instanceof Error ? error.message : "Gagal menangkap jepretan.");
       }
     },
     [captureEdge, identity.id, storeShot],
@@ -817,7 +821,7 @@ function BoothSession({ code }: { code: string }) {
           try {
             video = await worker.encodeVideo(boomerangFrames, 12, true);
           } catch (error) {
-            setToast(
+            toast.warning(
               error instanceof Error && /WebCodecs|H\.264/i.test(error.message)
                 ? "Boomerang dilewati: peramban ini tidak mendukung WebCodecs H.264."
                 : "Boomerang gagal dikodekan, foto tetap tersimpan.",
@@ -867,7 +871,7 @@ function BoothSession({ code }: { code: string }) {
           body: JSON.stringify({ code, action: "complete" }),
         }).catch(() => undefined);
       } catch (error) {
-        setToast(error instanceof Error ? error.message : "Gagal menyusun hasil.");
+        toast.warning(error instanceof Error ? error.message : "Gagal menyusun hasil.");
       } finally {
         setBusy(null);
       }
@@ -897,7 +901,7 @@ function BoothSession({ code }: { code: string }) {
 
       const frames = stopBoomerang();
       if (tierRef.current === "paid" && (!frames || frames.length < 6)) {
-        setToast("Boomerang tidak terekam karena tab tidak aktif. Biarkan tab ini tetap terlihat saat memotret.");
+        toast.warning("Boomerang tidak terekam karena tab tidak aktif. Biarkan tab ini tetap terlihat saat memotret.");
       }
       buildReview();
       setBusy(null);
@@ -910,7 +914,7 @@ function BoothSession({ code }: { code: string }) {
     async (index: number) => {
       if (!hostRef.current || busyRef.current) return;
       if (room && room.retakesUsed >= room.maxRetakes) {
-        setToast("Kuota retake habis. Buka Session Pass untuk retake tanpa batas.");
+        toast.warning("Kuota retake habis. Buka Session Pass untuk retake tanpa batas.");
         setPaywallOpen(true);
         return;
       }
@@ -948,7 +952,7 @@ function BoothSession({ code }: { code: string }) {
   const retakeSession = useCallback(async () => {
     if (!hostRef.current || busyRef.current) return;
     if (room && room.retakesUsed >= room.maxRetakes) {
-      setToast("Kuota retake habis. Buka Session Pass untuk retake tanpa batas.");
+      toast.warning("Kuota retake habis. Buka Session Pass untuk retake tanpa batas.");
       setPaywallOpen(true);
       return;
     }
@@ -1057,12 +1061,6 @@ function BoothSession({ code }: { code: string }) {
   }, [identity.id, send]);
 
   useEffect(() => {
-    if (!toast) return;
-    const timer = window.setTimeout(() => setToast(null), 5200);
-    return () => window.clearTimeout(timer);
-  }, [toast]);
-
-  useEffect(() => {
     return () => {
       for (const item of reviewRef.current) URL.revokeObjectURL(item.url);
     };
@@ -1074,10 +1072,10 @@ function BoothSession({ code }: { code: string }) {
   if (roomError || !room) {
     return (
       <div className="mx-auto flex min-h-dvh w-full max-w-lg flex-col items-center justify-center gap-4 px-5 text-center">
-        <CircleAlert className="h-6 w-6 text-amber-300" />
-        <h1 className="text-xl font-semibold">Tidak bisa membuka ruangan</h1>
-        <p className="text-sm text-white/50">{roomError ?? "Ruangan tidak ditemukan."}</p>
-        <div className="flex gap-2">
+        <CircleAlert className="h-7 w-7 text-destructive" aria-hidden />
+        <h1 className="text-xl font-bold tracking-tight">Tidak bisa membuka ruangan</h1>
+        <p className="text-sm text-muted-foreground">{roomError ?? "Ruangan tidak ditemukan."}</p>
+        <div className="mt-1 flex flex-wrap justify-center gap-2">
           <Link href="/join">
             <Button variant="secondary">Coba kode lain</Button>
           </Link>
@@ -1193,7 +1191,14 @@ function BoothSession({ code }: { code: string }) {
         <>
           <div className="mx-auto grid w-full max-w-7xl gap-4 px-4 pb-28 pt-2 sm:px-6 lg:grid-cols-[1fr_360px] lg:pb-8">
             <div className="relative flex min-h-[52vh] items-center justify-center lg:sticky lg:top-4 lg:h-[calc(100dvh-7rem)] lg:min-h-0 lg:self-start">
-              <div className="absolute inset-0 -z-10 rounded-[2rem] bg-[radial-gradient(circle_at_50%_30%,rgba(226,82,58,0.16),transparent_60%)] blur-2xl" />
+              <div
+                className="pointer-events-none absolute inset-6 -z-10 rounded-[3rem] bg-brand/20 blur-3xl dark:bg-brand/25"
+                aria-hidden
+              />
+              <div
+                className="pointer-events-none absolute -bottom-4 right-8 -z-10 size-52 rounded-full bg-lilac/25 blur-3xl"
+                aria-hidden
+              />
 
               <StagePreview
                 sources={stageSources}
@@ -1213,7 +1218,7 @@ function BoothSession({ code }: { code: string }) {
                 <div className="pointer-events-none absolute inset-0 grid place-items-center">
                   <span
                     key={countdown.value}
-                    className="animate-countdown font-display text-[26vw] leading-none text-white drop-shadow-[0_10px_40px_rgba(0,0,0,0.7)] sm:text-[14rem]"
+                    className="animate-countdown font-display text-[26vw] font-extrabold leading-none text-primary [text-shadow:0_6px_30px_color-mix(in_oklab,var(--background)_90%,transparent)] sm:text-[14rem]"
                   >
                     {countdown.value}
                   </span>
@@ -1222,19 +1227,19 @@ function BoothSession({ code }: { code: string }) {
 
               {busyLabel || awaitingResult ? (
                 <div className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center pb-4">
-                  <div className="surface-strong inline-flex items-center gap-2.5 rounded-full px-4 py-2 text-xs text-white/75">
-                    <Loader2 className="h-3.5 w-3.5 animate-spin text-flame" />
+                  <div className="surface-strong inline-flex items-center gap-2.5 rounded-full px-4 py-2 text-xs text-foreground/90">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
                     {busyLabel ?? "Menunggu host menyusun hasil…"}
                   </div>
                 </div>
               ) : null}
 
               {session.expired ? (
-                <div className="absolute inset-0 grid place-items-center rounded-2xl bg-black/70 text-center backdrop-blur-sm">
+                <div className="absolute inset-0 grid place-items-center rounded-2xl bg-background/75 text-center backdrop-blur-md">
                   <div className="px-6">
-                    <Timer className="mx-auto h-6 w-6 text-amber-300" />
+                    <Timer className="mx-auto h-6 w-6 text-warn" />
                     <h2 className="mt-3 text-lg font-medium">Waktu sesi habis</h2>
-                    <p className="mt-1 max-w-xs text-sm text-white/50">
+                    <p className="mt-1 max-w-xs text-sm text-muted-foreground">
                       Hasil yang sudah diunduh tetap milikmu. Buat ruang baru untuk sesi berikutnya.
                     </p>
                     <Link href="/create" className="mt-4 inline-block">
@@ -1249,9 +1254,9 @@ function BoothSession({ code }: { code: string }) {
               <div className="surface rounded-3xl p-4">
                 <div className="flex items-center justify-between">
                   <h2 className="flex items-center gap-1.5 text-sm font-medium">
-                    <Users className="h-4 w-4 text-white/45" /> Peserta ({participants.length}/{room.maxParticipants})
+                    <Users className="h-4 w-4 text-muted-foreground" /> Peserta ({participants.length}/{room.maxParticipants})
                   </h2>
-                  <span className={cn("text-[11px]", clock.samples > 0 ? "text-[#7ee2c8]" : "text-white/30")}>
+                  <span className={cn("text-[11px]", clock.samples > 0 ? "text-mint" : "text-muted-foreground")}>
                     {clock.samples > 0
                       ? `sync ${Math.round(clock.rtt / 2)} ms`
                       : isHost
@@ -1263,14 +1268,14 @@ function BoothSession({ code }: { code: string }) {
                   {participants.map((participant) => (
                     <li key={participant.peerId} className="flex items-center justify-between gap-2 text-xs">
                       <span className="flex min-w-0 items-center gap-2">
-                        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#7ee2c8]" />
-                        <span className="truncate text-white/75">
+                        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-mint" />
+                        <span className="truncate text-foreground/90">
                           {participant.name}
                           {participant.peerId === identity.id ? " (kamu)" : ""}
                         </span>
                       </span>
                       {participant.isHost ? (
-                        <span className="shrink-0 text-[10px] uppercase tracking-[0.14em] text-white/30">host</span>
+                        <span className="shrink-0 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">host</span>
                       ) : null}
                     </li>
                   ))}
@@ -1282,31 +1287,32 @@ function BoothSession({ code }: { code: string }) {
                     onClick={toggleMirror}
                     aria-pressed={mirrored}
                     className={cn(
-                      "inline-flex items-center justify-center gap-1.5 rounded-xl border px-3 py-2 text-xs transition",
+                      "inline-flex h-11 items-center justify-center gap-1.5 rounded-xl border px-3 text-xs font-semibold transition",
                       mirrored
-                        ? "border-flame/50 bg-flame/15 text-white"
-                        : "border-white/12 bg-black/25 text-white/60 hover:border-white/30",
+                        ? "border-primary/50 bg-primary/12 text-foreground"
+                        : "border-border/70 bg-card/70 text-muted-foreground hover:border-primary/40 hover:text-foreground",
                     )}
                   >
-                    <FlipHorizontal2 className="h-3.5 w-3.5" /> Mirror
+                    <FlipHorizontal2 className="h-3.5 w-3.5" aria-hidden /> Mirror
                   </button>
                   <button
                     type="button"
                     onClick={() => setToolOpen((value) => !value)}
                     aria-pressed={toolOpen}
+                    aria-expanded={toolOpen}
                     className={cn(
-                      "inline-flex items-center justify-center gap-1.5 rounded-xl border px-3 py-2 text-xs transition",
+                      "inline-flex h-11 items-center justify-center gap-1.5 rounded-xl border px-3 text-xs font-semibold transition",
                       toolOpen
-                        ? "border-white/30 bg-white/10 text-white"
-                        : "border-white/12 bg-black/25 text-white/60 hover:border-white/30",
+                        ? "border-primary/50 bg-primary/12 text-foreground"
+                        : "border-border/70 bg-card/70 text-muted-foreground hover:border-primary/40 hover:text-foreground",
                     )}
                   >
-                    <Camera className="h-3.5 w-3.5" /> Kamera
+                    <Camera className="h-3.5 w-3.5" aria-hidden /> Kamera
                   </button>
                 </div>
 
                 {toolOpen ? (
-                  <div className="mt-3 space-y-3 border-t border-white/8 pt-3">
+                  <div className="mt-3 space-y-3 border-t border-border/30 pt-3">
                     <DevicePicker
                       cameras={media.devices.cameras}
                       microphones={media.devices.microphones}
@@ -1335,13 +1341,13 @@ function BoothSession({ code }: { code: string }) {
               <div className="surface rounded-3xl p-4">
                 <div className="mb-3 flex items-center justify-between">
                   <h2 className="flex items-center gap-1.5 text-sm font-medium">
-                    <Layers className="h-4 w-4 text-white/45" /> Bingkai & filter
+                    <Layers className="h-4 w-4 text-muted-foreground" /> Bingkai & filter
                   </h2>
                   {tier === "free" ? (
                     <button
                       type="button"
                       onClick={() => setPaywallOpen(true)}
-                      className="inline-flex items-center gap-1 text-[10px] font-medium uppercase tracking-[0.12em] text-[#f6d9a8] hover:underline"
+                      className="inline-flex items-center gap-1 text-[10px] font-medium uppercase tracking-[0.12em] text-pro hover:underline"
                     >
                       <Crown className="h-2.5 w-2.5" /> Pass
                     </button>
@@ -1377,10 +1383,10 @@ function BoothSession({ code }: { code: string }) {
             </aside>
           </div>
 
-          <div className="fixed inset-x-0 bottom-0 z-20 border-t border-white/10 bg-[#0c0b0a]/92 px-4 py-3 backdrop-blur-xl sm:px-6">
+          <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border/60 bg-card/95 px-4 py-3 backdrop-blur-xl sm:px-6">
             <div className="mx-auto flex w-full max-w-7xl items-center gap-3">
               <div className="hidden min-w-0 flex-1 sm:block">
-                <div className="flex items-center justify-between text-[11px] text-white/40">
+                <div className="flex items-center justify-between text-[11px] text-muted-foreground">
                   <span>
                     {filled}/{shotCount} slot terisi
                   </span>
@@ -1402,7 +1408,7 @@ function BoothSession({ code }: { code: string }) {
                   {busy ? "Memproses…" : review.length > 0 ? "Jepret ulang semua" : "Mulai jepret"}
                 </Button>
               ) : (
-                <div className="flex w-full items-center justify-center gap-2 text-xs text-white/45 sm:w-auto">
+                <div className="flex w-full items-center justify-center gap-2 text-xs text-muted-foreground sm:w-auto">
                   <Wifi className="h-3.5 w-3.5" /> Menunggu host memulai jepretan
                 </div>
               )}
@@ -1419,15 +1425,15 @@ function BoothSession({ code }: { code: string }) {
                       <img
                         src={item.url}
                         alt={`Jepretan ${item.shotIndex + 1}`}
-                        className="h-16 w-12 rounded-lg object-cover ring-1 ring-white/15"
+                        className="h-16 w-12 rounded-lg object-cover ring-1 ring-border/60"
                       />
                       <button
                         type="button"
                         onClick={() => void retakeShot(item.shotIndex)}
-                        className="absolute -right-1.5 -top-1.5 grid h-5 w-5 place-items-center rounded-full bg-flame text-white shadow"
+                        className="absolute -right-2 -top-2 grid size-7 place-items-center rounded-full bg-primary text-primary-foreground shadow-md ring-2 ring-background transition hover:bg-primary/90"
                         aria-label={`Ulangi jepretan ${item.shotIndex + 1}`}
                       >
-                        <RefreshCw className="h-2.5 w-2.5" />
+                        <RefreshCw className="h-3 w-3" aria-hidden />
                       </button>
                     </div>
                   ))}
@@ -1447,11 +1453,13 @@ function BoothSession({ code }: { code: string }) {
       )}
 
       <PaywallModal open={paywallOpen} code={code} onClose={() => setPaywallOpen(false)} onUnlocked={onUnlocked} />
-      <Toast message={toast} />
 
       {signalStatus === "error" ? (
-        <div className="fixed left-4 top-16 z-30 inline-flex items-center gap-2 rounded-full bg-[#c8372a] px-3 py-1.5 text-[11px] text-white">
-          <WifiOff className="h-3 w-3" /> Sinyal terputus, mencoba ulang…
+        <div
+          role="status"
+          className="fixed left-4 top-16 z-30 inline-flex items-center gap-2 rounded-full bg-destructive px-3 py-1.5 text-[11px] font-semibold text-destructive-foreground shadow-lg"
+        >
+          <WifiOff className="h-3 w-3" aria-hidden /> Sinyal terputus, mencoba ulang…
         </div>
       ) : null}
     </div>
@@ -1478,7 +1486,7 @@ function TopBar({
           <Logo compact />
         </Link>
         <div className="hidden items-center gap-2 sm:flex">
-          <span className="rounded-lg border border-white/12 bg-white/5 px-2.5 py-1 font-mono text-xs tracking-[0.24em] text-white/70">
+          <span className="rounded-lg border border-border/50 bg-secondary/30 px-2.5 py-1 font-mono text-xs tracking-[0.24em] text-foreground/85">
             {normalizeRoomCode(code)}
           </span>
           {tier === "paid" ? (
@@ -1489,7 +1497,7 @@ function TopBar({
             <Pill>Free</Pill>
           )}
           {signalMode === "broadcast-channel" ? (
-            <span className="inline-flex items-center gap-1 rounded-full border border-amber-300/30 bg-amber-300/10 px-2 py-0.5 text-[10px] uppercase tracking-[0.12em] text-amber-200">
+            <span className="inline-flex items-center gap-1 rounded-full border border-warn/30 bg-warn/10 px-2 py-0.5 text-[10px] uppercase tracking-[0.12em] text-warn">
               <Wifi className="h-2.5 w-2.5" /> demo lokal
             </span>
           ) : null}
@@ -1497,34 +1505,23 @@ function TopBar({
       </div>
 
       <div className="flex items-center gap-3">
-        <span className="inline-flex items-center gap-1.5 text-xs text-white/45">
-          <Timer className="h-3.5 w-3.5" />
-          <span className={cn("font-mono", remaining < 60000 && "text-amber-300")}>{formatClock(remaining)}</span>
+        <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Timer className="h-3.5 w-3.5" aria-hidden />
+          <span className="sr-only">Sisa waktu sesi</span>
+          <span className={cn("font-mono tabular-nums", remaining < 60000 && "font-semibold text-destructive")}>
+            {formatClock(remaining)}
+          </span>
         </span>
         {onLeave ? (
           <button
             type="button"
             onClick={onLeave}
-            className="inline-flex items-center gap-1.5 rounded-full border border-white/12 px-3 py-1.5 text-[11px] text-white/55 transition hover:border-white/30 hover:text-white"
+            className="inline-flex h-10 items-center gap-1.5 rounded-full border border-border/60 px-3.5 text-[11px] font-semibold text-muted-foreground transition hover:border-destructive/40 hover:text-destructive"
           >
-            <LogOut className="h-3 w-3" /> Keluar
+            <LogOut className="h-3 w-3" aria-hidden /> Keluar
           </button>
         ) : null}
       </div>
     </header>
-  );
-}
-
-function Toast({ message }: { message: string | null }) {
-  if (!message) return null;
-  return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-24 z-[130] flex justify-center px-4">
-      <div className="pointer-events-auto max-w-md rounded-2xl border border-white/12 bg-[#1b1917]/95 px-4 py-3 text-xs leading-relaxed text-white/80 shadow-2xl backdrop-blur">
-        <span className="mr-1.5 inline-flex items-center gap-1 text-amber-300">
-          <CircleAlert className="h-3 w-3" />
-        </span>
-        {message}
-      </div>
-    </div>
   );
 }

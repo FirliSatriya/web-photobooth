@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Check, Copy, Loader2, QrCode, RefreshCw, ShieldCheck, Sparkles, Users } from "lucide-react";
+import { ArrowRight, Check, CircleAlert, Copy, Loader2, QrCode, RefreshCw, ShieldCheck, Sparkles, Users } from "lucide-react";
 import { Button, Logo, Pill } from "@/components/ui";
 import { QRCode } from "@/components/booth/QRCode";
 import type { RoomCreateResponse } from "@/lib/types";
@@ -40,7 +40,7 @@ export default function CreatePage() {
 
   return (
     <main className="relative min-h-dvh overflow-hidden">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_-10%,rgba(226,82,58,0.2),transparent_55%)]" />
+      <div className="page-glow pointer-events-none absolute inset-0" aria-hidden />
 
       <header className="relative z-10 mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-5 sm:px-8">
         <Link href="/">
@@ -53,13 +53,13 @@ export default function CreatePage() {
         </Link>
       </header>
 
-      <section className="relative z-10 mx-auto grid w-full max-w-5xl gap-5 px-5 pb-16 pt-4 sm:px-8 lg:grid-cols-[1fr_0.85fr]">
-        <div className="surface rounded-3xl p-6 sm:p-8">
+      <section className="relative z-10 mx-auto grid w-full max-w-5xl items-start gap-5 px-5 pb-16 pt-4 sm:px-8 lg:grid-cols-[1fr_0.85fr]">
+        <div className="surface min-w-0 rounded-3xl p-6 sm:p-8">
           {!data && !error ? (
             <div className="flex min-h-[320px] flex-col items-center justify-center gap-3 text-center">
-              <Loader2 className="h-6 w-6 animate-spin text-flame" />
-              <p className="text-sm text-white/55">Menyiapkan ruang photobooth…</p>
-              <p className="max-w-xs text-xs text-white/30">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              <p className="text-sm text-muted-foreground">Menyiapkan ruang photobooth…</p>
+              <p className="max-w-xs text-xs text-muted-foreground">
                 Tanpa login. Kode 6 digit dan tautan dibuat dalam hitungan milidetik.
               </p>
             </div>
@@ -67,9 +67,12 @@ export default function CreatePage() {
 
           {error ? (
             <div className="flex min-h-[320px] flex-col items-center justify-center gap-3 text-center">
-              <p className="text-sm text-amber-200">{error}</p>
+              <CircleAlert className="h-6 w-6 text-destructive" aria-hidden />
+              <p role="alert" className="text-sm text-destructive">
+                {error}
+              </p>
               <Button onClick={() => void create()}>
-                <RefreshCw className="h-4 w-4" /> Coba lagi
+                <RefreshCw className="h-4 w-4" aria-hidden /> Coba lagi
               </Button>
             </div>
           ) : null}
@@ -80,15 +83,15 @@ export default function CreatePage() {
                 <Sparkles className="h-3 w-3" /> Ruang siap
               </Pill>
               <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">Bagikan kode ini</h1>
-              <p className="mt-2 text-sm leading-relaxed text-white/50">
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                 Maksimal {data.room.maxParticipants} peserta di tier gratis. Buka Session Pass kapan saja untuk 4
                 peserta, 2K tanpa watermark, dan boomerang.
               </p>
 
-              <div className="mt-6 rounded-2xl border border-white/12 bg-black/35 p-5">
-                <span className="text-[10px] uppercase tracking-[0.2em] text-white/35">Kode ruang</span>
-                <div className="mt-1 flex items-center justify-between gap-3">
-                  <span className="font-mono text-4xl tracking-[0.32em] text-white sm:text-5xl">
+              <div className="mt-6 rounded-2xl border border-border/60 bg-card/85 p-5">
+                <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Kode ruang</span>
+                <div className="mt-1 flex flex-wrap items-center justify-between gap-3">
+                  <span className="font-mono text-[2rem] leading-none tracking-[0.22em] text-foreground sm:text-5xl sm:tracking-[0.32em]">
                     {data.room.code}
                   </span>
                   <button
@@ -98,21 +101,21 @@ export default function CreatePage() {
                       setCopied(true);
                       window.setTimeout(() => setCopied(false), 1600);
                     }}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-white/12 px-3 py-1.5 text-[11px] text-white/60 transition hover:border-white/30 hover:text-white"
+                    className="inline-flex h-10 items-center gap-1.5 rounded-full border border-border/60 px-3.5 text-[11px] font-semibold text-foreground/80 transition hover:border-primary/50 hover:text-foreground"
                   >
-                    {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                    {copied ? <Check className="h-3.5 w-3.5 text-mint" aria-hidden /> : <Copy className="h-3.5 w-3.5" aria-hidden />}
                     {copied ? "Tersalin" : "Salin"}
                   </button>
                 </div>
 
-                <div className="mt-4 border-t border-white/8 pt-3">
-                  <span className="text-[10px] uppercase tracking-[0.2em] text-white/35">Tautan undangan</span>
+                <div className="mt-4 border-t border-border/30 pt-3">
+                  <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Tautan undangan</span>
                   <div className="mt-1 flex items-center justify-between gap-3">
-                    <code className="min-w-0 flex-1 truncate text-xs text-white/55">{shareUrl}</code>
+                    <code className="min-w-0 flex-1 truncate text-xs text-muted-foreground">{shareUrl}</code>
                     <button
                       type="button"
                       onClick={() => void navigator.clipboard?.writeText(shareUrl)}
-                      className="shrink-0 text-[11px] text-white/55 underline-offset-4 hover:text-white hover:underline"
+                      className="inline-flex h-10 shrink-0 items-center text-[11px] font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
                     >
                       Salin
                     </button>
@@ -134,7 +137,7 @@ export default function CreatePage() {
                 </Button>
               </div>
 
-              <ul className="mt-6 grid gap-2 text-[11px] text-white/35 sm:grid-cols-3">
+              <ul className="mt-6 grid gap-2 text-[11px] text-muted-foreground sm:grid-cols-3">
                 <li className="inline-flex items-center gap-1.5">
                   <ShieldCheck className="h-3.5 w-3.5" /> Tanpa instal
                 </li>
@@ -152,21 +155,21 @@ export default function CreatePage() {
         <div className="space-y-4">
           <div className="surface rounded-3xl p-5">
             <h2 className="text-sm font-medium">Scan untuk gabung</h2>
-            <p className="mt-1 text-xs leading-relaxed text-white/45">
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
               Buka kamera ponsel lalu pindai. Ideal untuk mengajak teman yang sedang di luar.
             </p>
             {data ? (
               <QRCode value={shareUrl} size={196} className="mt-5" caption="Tautan undangan ruang" />
             ) : (
-              <div className="mt-5 grid h-[196px] w-[196px] place-items-center rounded-2xl bg-white/5">
-                <QrCode className="h-6 w-6 text-white/20" />
+              <div className="mt-5 grid h-[196px] w-[196px] place-items-center rounded-2xl bg-secondary/30">
+                <QrCode className="h-6 w-6 text-muted-foreground/80" />
               </div>
             )}
           </div>
 
           <div className="surface rounded-3xl p-5">
             <h2 className="text-sm font-medium">Yang perlu disiapkan</h2>
-            <ul className="mt-3 space-y-2 text-xs leading-relaxed text-white/50">
+            <ul className="mt-3 space-y-2 text-xs leading-relaxed text-muted-foreground">
               <li>1. Izinkan akses kamera & mikrofon di peramban.</li>
               <li>2. Pilih webcam eksternal bila ada (hot-plug terdeteksi).</li>
               <li>3. Atur mirror masing-masing — hasil akhir mengikuti.</li>
@@ -175,9 +178,13 @@ export default function CreatePage() {
           </div>
 
           {data?.paymentProvider === "demo" ? (
-            <div className="rounded-3xl border border-amber-300/25 bg-amber-300/8 p-4 text-[11px] leading-relaxed text-amber-100/80">
-              Mode demo aktif: kunci Midtrans belum diisi, jadi Session Pass terbuka otomatis saat kamu menekan tombol
-              bayar. Isi <code className="text-amber-100">MIDTRANS_SERVER_KEY</code> untuk transaksi sungguhan.
+            <div className="rounded-3xl border border-warn/25 bg-warn/10 p-4 text-[11px] leading-relaxed text-foreground/80">
+              <span className="mb-1 flex items-center gap-1.5 font-semibold text-warn">
+                <Sparkles className="h-3 w-3" aria-hidden /> Mode demo aktif
+              </span>
+              Kunci Midtrans belum diisi, jadi Session Pass terbuka otomatis saat kamu menekan tombol bayar. Isi{" "}
+              <code className="rounded bg-secondary px-1 py-0.5 font-mono text-[10px] text-foreground">MIDTRANS_SERVER_KEY</code>{" "}
+              untuk transaksi sungguhan.
             </div>
           ) : null}
         </div>

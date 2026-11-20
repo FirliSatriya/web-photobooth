@@ -32,7 +32,7 @@ export function FramePicker({
   return (
     <div className="space-y-6">
       <section>
-        <h3 className="mb-2.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/45">Tata letak</h3>
+        <h3 className="mb-2.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Tata letak</h3>
         <div className="grid grid-cols-3 gap-2">
           {LAYOUTS.map((item) => (
             <button
@@ -41,26 +41,26 @@ export function FramePicker({
               onClick={() => onLayout(item.id)}
               aria-pressed={layout === item.id}
               className={cn(
-                "rounded-2xl border px-2 py-3 text-center transition",
+                "min-h-[76px] rounded-2xl border px-2 py-3 text-center transition",
                 layout === item.id
-                  ? "border-flame/60 bg-flame/10 text-white"
-                  : "border-white/10 bg-black/20 text-white/55 hover:border-white/25",
+                  ? "border-primary/60 bg-primary/10 text-primary"
+                  : "border-border/70 bg-card/60 text-muted-foreground hover:border-primary/40 hover:bg-secondary hover:text-foreground",
               )}
             >
               <LayoutGlyph layout={item.id} />
-              <span className="mt-2 block text-[11px] font-medium">{item.label}</span>
+              <span className="mt-2 block text-[11px] font-semibold">{item.label}</span>
             </button>
           ))}
         </div>
-        <p className="mt-2 text-[11px] text-white/35">
+        <p className="mt-2 text-[11px] text-muted-foreground">
           {LAYOUTS.find((item) => item.id === layout)?.hint} · {LAYOUTS.find((item) => item.id === layout)?.shots} jepretan
         </p>
       </section>
 
       <section>
-        <h3 className="mb-2.5 flex items-baseline justify-between text-[11px] font-semibold uppercase tracking-[0.16em] text-white/45">
+        <h3 className="mb-2.5 flex items-baseline justify-between text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           Bingkai
-          <span className="font-normal normal-case tracking-normal text-white/30">
+          <span className="font-normal normal-case tracking-normal text-muted-foreground/90">
             {FRAMES.filter((frame) => frame.layout === layout).length} untuk layout ini
           </span>
         </h3>
@@ -75,37 +75,40 @@ export function FramePicker({
                 type="button"
                 onClick={() => (locked ? onUnlock() : onFrame(frame.id))}
                 aria-pressed={active}
+                aria-label={`${frame.name}${locked ? " — terkunci, butuh Session Pass" : ""}`}
                 className={cn(
                   "group relative overflow-hidden rounded-2xl border text-left transition",
-                  active ? "border-flame/70 bg-white/5" : "border-white/10 bg-black/20 hover:border-white/25",
+                  active
+                    ? "border-primary/70 bg-primary/8 ring-1 ring-primary/30"
+                    : "border-border/70 bg-card/60 hover:border-primary/40",
                   wrongLayout && "opacity-45",
                 )}
               >
-                <div className="relative aspect-[3/4] w-full bg-[#141210] p-1.5">
+                <div className="relative aspect-[3/4] w-full bg-canvas p-1.5">
                   <FrameCanvas frame={frame} participantCount={participantCount} longEdge={300} />
                   {locked ? (
-                    <span className="absolute right-1 top-1 rounded-full bg-black/70 p-1 text-[#f6d9a8]">
-                      <Lock className="h-2.5 w-2.5" />
+                    <span className="absolute right-1 top-1 rounded-full bg-card/95 p-1 text-pro shadow-sm">
+                      <Lock className="h-2.5 w-2.5" aria-hidden />
                     </span>
                   ) : null}
                   {active ? (
-                    <span className="absolute bottom-1 right-1 grid h-5 w-5 place-items-center rounded-full bg-flame text-white">
-                      <Check className="h-3 w-3" />
+                    <span className="absolute bottom-1 right-1 grid size-5 place-items-center rounded-full bg-primary text-primary-foreground shadow-sm">
+                      <Check className="h-3 w-3" aria-hidden />
                     </span>
                   ) : null}
                 </div>
-                <span className="block truncate px-2 py-1.5 text-[10px] text-white/60">{frame.name}</span>
+                <span className="block truncate px-2 py-1.5 text-[10px] font-medium text-foreground/85">{frame.name}</span>
               </button>
             );
           })}
         </div>
-        <p className="mt-2 text-[11px] text-white/30">
+        <p className="mt-2 text-[11px] text-muted-foreground">
           Bingkai yang diredupkan milik layout lain — pilih tata letaknya dulu.
         </p>
       </section>
 
       <section>
-        <h3 className="mb-2.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/45">Filter</h3>
+        <h3 className="mb-2.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Filter</h3>
         <div className="flex flex-wrap gap-2">
           {FILTERS.map((item) => {
             const locked = !filterAvailable(item.id, tier);
@@ -116,15 +119,15 @@ export function FramePicker({
                 onClick={() => (locked ? onUnlock() : onFilter(item.id))}
                 aria-pressed={filter === item.id}
                 className={cn(
-                  "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition",
+                  "inline-flex h-10 items-center gap-1.5 rounded-full border px-3.5 text-xs font-semibold transition",
                   filter === item.id
-                    ? "border-flame/60 bg-flame/15 text-white"
-                    : "border-white/12 bg-black/20 text-white/55 hover:border-white/30",
+                    ? "border-primary/60 bg-primary/12 text-foreground"
+                    : "border-border/70 bg-card/60 text-muted-foreground hover:border-primary/40 hover:text-foreground",
                 )}
               >
-                <span className={cn("h-3 w-3 rounded-full border border-white/25", filterSwatch(item.id))} />
+                <span className={cn("size-3 rounded-full border border-border", filterSwatch(item.id))} aria-hidden />
                 {item.name}
-                {locked ? <Lock className="h-2.5 w-2.5 text-[#f6d9a8]" /> : null}
+                {locked ? <Lock className="h-2.5 w-2.5 text-pro" aria-hidden /> : null}
               </button>
             );
           })}
@@ -137,7 +140,7 @@ export function FramePicker({
 function filterSwatch(id: FilterId): string {
   switch (id) {
     case "mono":
-      return "bg-white/80";
+      return "bg-secondary/40";
     case "vintage":
       return "bg-[#d8b184]";
     case "cinematic":

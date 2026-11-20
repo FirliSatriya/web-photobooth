@@ -37,22 +37,22 @@ export function AppGate({ children }: { children: React.ReactNode }) {
     <div className="mx-auto flex min-h-dvh w-full max-w-lg flex-col justify-center px-5 py-12">
       <div className="surface rounded-3xl p-7">
         <Pill tone="warn">
-          <AlertTriangle className="h-3 w-3" /> Perlu perhatian
+          <AlertTriangle className="h-3 w-3" aria-hidden /> Perlu perhatian
         </Pill>
-        <h1 className="mt-4 text-2xl font-semibold tracking-tight">
+        <h1 className="mt-4 text-2xl font-extrabold tracking-tight">
           {state.inApp ? "Buka di browser sungguhan" : "Peramban belum didukung penuh"}
         </h1>
-        <p className="mt-2 text-sm leading-relaxed text-white/55">
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
           {state.inApp
             ? "Browser bawaan Instagram/TikTok/LINE memblokir akses kamera dan WebCodecs. Salin tautan ini lalu buka di Safari atau Chrome."
             : "Sebagian fitur inti tidak tersedia di peramban ini."}
         </p>
 
         {state.issues.length > 0 ? (
-          <ul className="mt-5 space-y-2 text-sm text-white/65">
+          <ul className="mt-5 space-y-2 text-sm text-foreground/85">
             {state.issues.map((issue) => (
               <li key={issue} className="flex gap-2.5">
-                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-300" />
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-warn" />
                 {issue}
               </li>
             ))}
@@ -60,16 +60,16 @@ export function AppGate({ children }: { children: React.ReactNode }) {
         ) : null}
 
         {!state.webcodecs ? (
-          <p className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-3 text-xs leading-relaxed text-white/50">
+          <p className="mt-5 rounded-2xl border border-border/60 bg-canvas p-3 text-xs leading-relaxed text-muted-foreground">
             Video boomerang (MP4) butuh WebCodecs. Foto tetap bisa diambil dan diunduh sebagai PNG, dan filter
             otomatis turun ke Canvas 2D jika WebGL2 tidak tersedia.
           </p>
         ) : null}
 
         <div className="mt-6 space-y-3">
-          <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/30 px-3 py-2.5">
-            <Smartphone className="h-4 w-4 shrink-0 text-white/40" />
-            <code className="min-w-0 flex-1 truncate text-xs text-white/70">{url}</code>
+          <div className="flex items-center gap-2 rounded-xl border border-border/60 bg-canvas px-3 py-2.5">
+            <Smartphone className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+            <code className="min-w-0 flex-1 truncate text-xs text-foreground/85">{url}</code>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
             <Button
@@ -86,7 +86,7 @@ export function AppGate({ children }: { children: React.ReactNode }) {
               onClick={() => window.open(url, "_blank", "noopener,noreferrer")}
             >
               Coba buka di luar
-              <ExternalLink className="h-4 w-4" />
+              <ExternalLink className="h-4 w-4" aria-hidden />
             </Button>
           </div>
           {!isFatal ? (

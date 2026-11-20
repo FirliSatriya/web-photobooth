@@ -32,7 +32,7 @@ export function BackdropPicker({
   onUnlock,
 }: BackdropPickerProps) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/25 p-4">
+    <div className="rounded-2xl border border-border/60 bg-canvas p-4">
       <Toggle
         checked={enabled && !locked}
         onChange={(value) => (locked ? onUnlock() : onToggle(value))}
@@ -44,9 +44,9 @@ export function BackdropPicker({
         <button
           type="button"
           onClick={onUnlock}
-          className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-medium text-[#f6d9a8] hover:underline"
+          className="mt-3 inline-flex h-9 items-center gap-1.5 text-[11px] font-semibold text-pro hover:underline"
         >
-          <Lock className="h-3 w-3" /> Termasuk Session Pass
+          <Lock className="h-3 w-3" aria-hidden /> Termasuk Session Pass
         </button>
       ) : null}
 
@@ -61,7 +61,9 @@ export function BackdropPicker({
                 aria-pressed={presetId === preset.id}
                 className={cn(
                   "overflow-hidden rounded-xl border text-left transition",
-                  presetId === preset.id ? "border-flame/70" : "border-white/10 hover:border-white/30",
+                  presetId === preset.id
+                    ? "border-primary/70 ring-1 ring-primary/30"
+                    : "border-border/60 hover:border-primary/40",
                 )}
               >
                 <span
@@ -70,24 +72,26 @@ export function BackdropPicker({
                     background: `linear-gradient(135deg, ${preset.colors[0]}, ${preset.colors[1]})`,
                   }}
                 />
-                <span className="block truncate px-2 py-1 text-[10px] text-white/55">{preset.name}</span>
+                <span className="block truncate px-2 py-1 text-[10px] text-muted-foreground">{preset.name}</span>
               </button>
             ))}
           </div>
 
           {loading ? (
-            <p className="inline-flex items-center gap-2 text-[11px] text-white/45">
-              <Loader2 className="h-3 w-3 animate-spin" /> Memuat model segmentasi…
+            <p className="inline-flex items-center gap-2 text-[11px] text-muted-foreground" role="status">
+              <Loader2 className="h-3 w-3 animate-spin" aria-hidden /> Memuat model segmentasi…
             </p>
           ) : error ? (
-            <p className="text-[11px] leading-relaxed text-amber-200/80">{error}</p>
+            <p role="alert" className="text-[11px] leading-relaxed text-destructive">
+              {error}
+            </p>
           ) : ready ? (
-            <p className="inline-flex items-center gap-1.5 text-[11px] text-[#7ee2c8]">
-              <Sparkles className="h-3 w-3" /> Backdrop aktif, diproses lokal.
+            <p className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-mint">
+              <Sparkles className="h-3 w-3" aria-hidden /> Backdrop aktif, diproses lokal.
             </p>
           ) : (
-            <p className="inline-flex items-center gap-1.5 text-[11px] text-white/40">
-              <Wand2 className="h-3 w-3" /> Menyiapkan pipeline…
+            <p className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
+              <Wand2 className="h-3 w-3" aria-hidden /> Menyiapkan pipeline…
             </p>
           )}
         </div>

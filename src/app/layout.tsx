@@ -1,4 +1,6 @@
 import type { Metadata, Viewport } from "next";
+import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -16,7 +18,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0c0b0a",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#fffafd" },
+    { media: "(prefers-color-scheme: dark)", color: "#241426" },
+  ],
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -25,7 +30,12 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="id" suppressHydrationWarning>
-      <body className="min-h-dvh antialiased">{children}</body>
+      <body className="min-h-dvh antialiased">
+        <ThemeProvider>
+          {children}
+          <Toaster position="top-center" closeButton className="font-sans" />
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

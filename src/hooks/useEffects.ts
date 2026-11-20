@@ -31,7 +31,7 @@ export function useShutterEffects(enabled: boolean) {
 
   const flash = () => {
     const overlay = document.createElement("div");
-    overlay.className = "pointer-events-none fixed inset-0 z-[120] bg-white";
+    overlay.className = "pointer-events-none fixed inset-0 z-[120] bg-card";
     overlay.style.opacity = "0";
     overlay.style.transition = "opacity 90ms ease-out";
     document.body.appendChild(overlay);

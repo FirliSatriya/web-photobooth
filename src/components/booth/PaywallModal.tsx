@@ -1,8 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Check, CreditCard, Loader2, QrCode, ShieldCheck, X } from "lucide-react";
+import { Check, CreditCard, Loader2, QrCode, ShieldCheck } from "lucide-react";
 import { Button, Pill } from "@/components/ui";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { SESSION_PASS_PRICE_FALLBACK, rupiah } from "@/lib/pricing";
 
 export interface PaywallModalProps {
@@ -111,74 +112,78 @@ export function PaywallModal({ open, code, onClose, onUnlocked }: PaywallModalPr
   };
 
   if (!open) return null;
-
   return (
-    <div className="fixed inset-0 z-[110] flex items-end justify-center bg-black/70 p-4 backdrop-blur-sm sm:items-center">
-      <div className="surface-strong w-full max-w-md overflow-hidden rounded-3xl">
-        <div className="relative border-b border-white/10 bg-gradient-to-br from-flame/25 via-transparent to-transparent p-5">
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Tutup"
-            className="absolute right-4 top-4 grid h-8 w-8 place-items-center rounded-full text-white/50 transition hover:bg-white/10 hover:text-white"
-          >
-            <X className="h-4 w-4" />
-          </button>
+    <Dialog open={open} onOpenChange={(next) => (next ? undefined : onClose())}>
+      <DialogContent
+        showCloseButton
+        className="w-full max-w-md gap-0 overflow-hidden rounded-3xl border-border/70 bg-card p-0 shadow-2xl"
+      >
+        <div className="relative border-b border-border/60 bg-gradient-to-br from-primary/15 via-card to-accent/60 p-5">
           <Pill tone="pro">
-            <QrCode className="h-3 w-3" /> Session Pass
+            <QrCode className="h-3 w-3" aria-hidden /> Session Pass
           </Pill>
-          <h2 className="mt-3 text-xl font-semibold tracking-tight">Buka semua fitur untuk seluruh ruangan</h2>
-          <p className="mt-1 text-sm text-white/50">
+          <DialogTitle className="mt-3 text-xl font-bold tracking-tight">
+            Buka semua fitur untuk seluruh ruangan
+          </DialogTitle>
+          <DialogDescription className="mt-1 text-sm">
             Sekali bayar, semua peserta langsung dapat akses tanpa memuat ulang halaman.
-          </p>
+          </DialogDescription>
         </div>
 
         <div className="p-5">
           <div className="flex items-baseline gap-2">
             <span className="text-3xl font-semibold tracking-tight">{rupiah(amount)}</span>
-            <span className="text-xs text-white/40">/ ruangan</span>
+            <span className="text-xs text-muted-foreground">/ ruangan</span>
           </div>
 
-          <ul className="mt-4 space-y-2 text-sm text-white/70">
+          <ul className="mt-4 space-y-2 text-sm text-foreground/85">
             {BENEFITS.map((item) => (
               <li key={item} className="flex gap-2.5">
-                <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#7ee2c8]" />
+                <Check className="mt-0.5 h-4 w-4 shrink-0 text-mint" />
                 {item}
               </li>
             ))}
           </ul>
 
-          {message ? <p className="mt-4 text-xs leading-relaxed text-amber-200/80">{message}</p> : null}
+          {message ? (
+            <p role="alert" className="mt-4 text-xs leading-relaxed text-destructive">
+              {message}
+            </p>
+          ) : null}
 
           <div className="mt-5">
             {stage === "done" ? (
-              <div className="flex items-center gap-2 rounded-2xl border border-[#7ee2c8]/30 bg-[#7ee2c8]/10 px-4 py-3 text-sm text-[#b6f2e3]">
-                <Check className="h-4 w-4" /> Session Pass aktif.
+              <div className="flex items-center gap-2 rounded-2xl border border-mint/30 bg-mint/10 px-4 py-3 text-sm font-semibold text-mint">
+                <Check className="h-4 w-4" aria-hidden /> Session Pass aktif.
               </div>
             ) : (
               <Button className="w-full" size="lg" loading={stage === "creating"} onClick={() => void start()}>
-                <CreditCard className="h-4 w-4" />
+                <CreditCard className="h-4 w-4" aria-hidden />
                 {stage === "waiting" ? "Menunggu pembayaran…" : `Bayar ${rupiah(amount)}`}
               </Button>
             )}
           </div>
 
           {stage === "waiting" ? (
-            <div className="mt-3 flex items-center justify-between gap-3 text-[11px] text-white/40">
+            <div className="mt-3 flex items-center justify-between gap-3 text-[11px] text-muted-foreground">
               <span className="inline-flex items-center gap-1.5">
-                <Loader2 className="h-3 w-3 animate-spin" /> Cek status otomatis tiap 3 detik
+                <Loader2 className="h-3 w-3 animate-spin" aria-hidden /> Cek status otomatis tiap 3 detik
               </span>
-              <button type="button" className="underline hover:text-white" onClick={() => void checkStatus()}>
+              <button
+                type="button"
+                className="inline-flex h-9 items-center rounded-full px-2 font-semibold text-foreground/80 underline-offset-4 hover:text-foreground hover:underline"
+                onClick={() => void checkStatus()}
+              >
                 Cek sekarang
               </button>
             </div>
           ) : (
-            <p className="mt-3 flex items-center justify-center gap-1.5 text-[11px] text-white/35">
-              <ShieldCheck className="h-3 w-3" /> QRIS, GoPay, OVO, transfer bank — via Midtrans
+            <p className="mt-3 flex items-center justify-center gap-1.5 text-[11px] text-muted-foreground">
+              <ShieldCheck className="h-3 w-3" aria-hidden /> QRIS, GoPay, OVO, transfer bank — via Midtrans
             </p>
           )}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

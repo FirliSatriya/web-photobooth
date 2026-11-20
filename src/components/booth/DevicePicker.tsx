@@ -54,9 +54,9 @@ export function DevicePicker({
             type="button"
             onClick={onRefresh}
             aria-label="Muat ulang daftar perangkat"
-            className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-white/12 bg-black/35 text-white/50 transition hover:text-white"
+            className="grid size-11 shrink-0 place-items-center rounded-xl border border-border/70 bg-card text-muted-foreground transition hover:border-primary/50 hover:text-foreground"
           >
-            <RefreshCw className="h-4 w-4" />
+            <RefreshCw className="h-4 w-4" aria-hidden />
           </button>
         </div>
       </div>
@@ -104,13 +104,17 @@ export function UvcPanel({ enabled, values, onChange, locked, onUnlock }: UvcPan
   ];
 
   return (
-    <div className="relative rounded-2xl border border-white/10 bg-black/25 p-4">
+    <div className="relative rounded-2xl border border-border/60 bg-canvas p-4">
       <div className="mb-3 flex items-center justify-between">
-        <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/45">
-          <SlidersHorizontal className="h-3 w-3" /> Kontrol UVC
+        <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          <SlidersHorizontal className="h-3 w-3" aria-hidden /> Kontrol UVC
         </span>
         {locked ? (
-          <button type="button" onClick={onUnlock} className="text-[11px] font-medium text-[#f6d9a8] hover:underline">
+          <button
+            type="button"
+            onClick={onUnlock}
+            className="inline-flex h-9 items-center text-[11px] font-semibold text-pro hover:underline"
+          >
             Buka dengan Session Pass
           </button>
         ) : null}
@@ -118,9 +122,9 @@ export function UvcPanel({ enabled, values, onChange, locked, onUnlock }: UvcPan
       <div className={cn("space-y-3", locked && "pointer-events-none opacity-40")}>
         {rows.map((row) => (
           <label key={row.key} className="block">
-            <span className="mb-1 flex items-baseline justify-between text-xs text-white/50">
+            <span className="mb-1 flex items-baseline justify-between text-xs text-muted-foreground">
               {row.label}
-              <span className="font-mono text-white/35">{values[row.key]}</span>
+              <span className="font-mono text-foreground/80">{values[row.key]}</span>
             </span>
             <input
               type="range"
@@ -129,7 +133,7 @@ export function UvcPanel({ enabled, values, onChange, locked, onUnlock }: UvcPan
               step={(row.max - row.min) / 20}
               value={values[row.key]}
               onChange={(event) => onChange({ ...values, [row.key]: Number(event.target.value) })}
-              className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/15 accent-flame"
+              className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-input/40 accent-primary"
             />
           </label>
         ))}

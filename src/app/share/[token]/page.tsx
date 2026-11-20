@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Clock, Lock, Sparkles } from "lucide-react";
-import { Logo, Pill } from "@/components/ui";
+import { Button, Logo, Pill } from "@/components/ui";
 import { QRCode } from "@/components/booth/QRCode";
 import { ShareActions } from "@/components/booth/ShareActions";
 import { getOutputRecord } from "@/lib/server/store";
@@ -38,24 +38,21 @@ export default async function SharePage({ params }: { params: Promise<{ token: s
   if (!record) {
     return (
       <main className="relative flex min-h-dvh flex-col">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_-10%,rgba(226,82,58,0.16),transparent_55%)]" />
+        <div className="page-glow pointer-events-none absolute inset-0" aria-hidden />
         <header className="relative z-10 mx-auto flex w-full max-w-5xl items-center justify-between px-5 py-5 sm:px-8">
           <Link href="/">
             <Logo />
           </Link>
         </header>
         <div className="relative z-10 mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-4 px-5 pb-20 text-center">
-          <Lock className="h-6 w-6 text-white/35" />
+          <Lock className="h-6 w-6 text-muted-foreground" aria-hidden />
           <h1 className="text-2xl font-semibold tracking-tight">Tautan sudah kedaluwarsa</h1>
-          <p className="text-sm leading-relaxed text-white/50">
+          <p className="text-sm leading-relaxed text-muted-foreground">
             Semua hasil disimpan maksimal 24 jam lalu dihapus otomatis. Minta host membuat sesi baru untuk
             photostrip berikutnya.
           </p>
-          <Link
-            href="/create"
-            className="mt-2 inline-flex items-center gap-2 rounded-2xl bg-flame px-5 py-2.5 text-sm font-medium text-white"
-          >
-            Buat ruang baru
+          <Link href="/create" className="mt-2">
+            <Button size="lg">Buat ruang baru</Button>
           </Link>
         </div>
       </main>
@@ -71,7 +68,7 @@ export default async function SharePage({ params }: { params: Promise<{ token: s
 
   return (
     <main className="relative min-h-dvh overflow-hidden">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_-10%,rgba(226,82,58,0.18),transparent_55%)]" />
+      <div className="page-glow pointer-events-none absolute inset-0" aria-hidden />
 
       <header className="relative z-10 mx-auto flex w-full max-w-5xl items-center justify-between px-5 py-5 sm:px-8">
         <Link href="/">
@@ -82,9 +79,9 @@ export default async function SharePage({ params }: { params: Promise<{ token: s
         </Pill>
       </header>
 
-      <section className="relative z-10 mx-auto grid w-full max-w-5xl gap-5 px-5 pb-16 sm:px-8 lg:grid-cols-[1.2fr_0.8fr]">
+      <section className="relative z-10 mx-auto grid w-full max-w-5xl items-start gap-5 px-5 pb-16 sm:px-8 lg:grid-cols-[1.2fr_0.8fr]">
         <div className="surface min-w-0 rounded-3xl p-3 sm:p-4">
-          <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#0f0e0c] p-2">
+          <div className="overflow-hidden rounded-2xl border border-border/40 bg-card p-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={imageUrl}
@@ -93,7 +90,7 @@ export default async function SharePage({ params }: { params: Promise<{ token: s
             />
           </div>
           {videoUrl ? (
-            <div className="mt-3 overflow-hidden rounded-2xl border border-white/10 bg-black">
+            <div className="mt-3 overflow-hidden rounded-2xl border border-border/40 bg-neutral-950">
               <video src={videoUrl} controls loop playsInline className="max-h-72 w-full" />
             </div>
           ) : null}
@@ -105,7 +102,7 @@ export default async function SharePage({ params }: { params: Promise<{ token: s
               <Sparkles className="h-3 w-3" /> Hasil sesi
             </Pill>
             <h1 className="mt-3 text-2xl font-semibold tracking-tight">Photostrip kamu</h1>
-            <p className="mt-1 text-sm leading-relaxed text-white/50">
+            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
               Simpan sekarang — tautan ini hilang otomatis pada{" "}
               {expires.toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })}.
             </p>
@@ -122,11 +119,11 @@ export default async function SharePage({ params }: { params: Promise<{ token: s
 
           <div className="surface rounded-3xl p-5">
             <h2 className="text-sm font-medium">Buka di ponsel</h2>
-            <p className="mt-1 text-xs leading-relaxed text-white/45">Pindai untuk menyimpan langsung ke galeri HP.</p>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">Pindai untuk menyimpan langsung ke galeri HP.</p>
             <QRCode value={pageUrl} size={176} className="mt-4" />
           </div>
 
-          <p className="px-1 text-[11px] leading-relaxed text-white/30">
+          <p className="px-1 text-[11px] leading-relaxed text-muted-foreground">
             Privasi: server hanya menyimpan hasil akhir, bukan rekaman kamera. Objek dihapus otomatis lewat lifecycle
             rule 24 jam.
           </p>

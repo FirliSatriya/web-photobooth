@@ -143,6 +143,20 @@ export const FRAMES: FrameSpec[] = [
     style: "pop",
     description: "Wide layout dengan blok warna pop art.",
   },
+  {
+    id: "frame-fairy-night",
+    slug: "fairy-night",
+    name: "Fairy Night",
+    layout: "1x4_strip",
+    isPremium: true,
+    tier: "paid",
+    paper: "#1b1030",
+    ink: "#fff2fb",
+    accent: "#ff8fc7",
+    secondary: "#b79cf0",
+    style: "neon",
+    description: "Langit galaxy ungu-pink dengan taburan bintang peri.",
+  },
 ];
 
 export function getFrame(id: string | null | undefined): FrameSpec {
